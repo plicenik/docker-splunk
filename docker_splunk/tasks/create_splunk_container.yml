@@ -1,0 +1,28 @@
+---
+- name: Creating splunk server container
+  docker_container:
+    docker_host: unix://var/run/docker.sock
+    detach: yes
+    name: "splunk1"
+    image: "splunk/splunk:latest"
+    #pull: yes
+    recreate: yes
+    env:
+        SPLUNK_START_ARGS: "--accept-license"
+        SPLUNK_PASSWORD: "{{ splunk_password }}"
+    published_ports:
+      - "8000:8000"
+      - "8089:8089"
+      - "9997:9997"
+      - "514:514"
+    networks_cli_compatible: yes
+    volumes:
+      - "splunk_etc:/opt/splunk/etc"
+      - "splunk_var:/opt/splunk/var"
+    restart_policy: unless-stopped
+    state: present
+
+- name: Starting splunk server
+  docker_container:
+    name: "splunk1"
+    state: started

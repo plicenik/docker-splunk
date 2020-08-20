@@ -1,0 +1,35 @@
+---
+- hosts: localhost
+  gather_facts: no
+
+  vars_prompt:
+    - name: "docker_host"
+      prompt: "Docker host IP"
+      private: no
+
+  tasks:
+    - name: Adding destination server to the host inventory
+      add_host:
+        name: "{{ docker_host }}"
+        ansible_ssh_user: "root"
+        ansible_ssh_private_key_file: '~/.ssh/s4u'
+        group: docker_hosts
+
+- hosts: docker_hosts
+  gather_facts: no
+
+  vars_prompt:
+    - name: "splunk_server_type"
+      prompt: "Splunk server type (server | forwarder)"
+      default: "server"
+      private: no
+    - name: "splunk_password"
+      prompt: "Splunk password"
+      private: yes
+    - name: "splunk_server_hostname"
+      prompt: "Standalone Splunk server hostname (Forwarder only)"
+      private: no
+
+  roles:
+      - { role: docker_splunk, when: splunk_server_type == "server" }
+      - { role: docker_splunk_uf, when: splunk_server_type == "forwarder" }

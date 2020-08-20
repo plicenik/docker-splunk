@@ -1,0 +1,4 @@
+---
+- name: Creating backend network for S4U containers
+  docker_network:
+    name: s4u

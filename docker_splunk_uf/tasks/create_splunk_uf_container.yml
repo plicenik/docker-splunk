@@ -1,0 +1,27 @@
+---
+- name: Creating splunk universal forwarder container
+  docker_container:
+    docker_host: unix://var/run/docker.sock
+    detach: yes
+    name: "splunk-uf1"
+    image: "splunk/universalforwarder:latest"
+    #pull: yes
+    recreate: yes
+    env:
+        SPLUNK_START_ARGS: "--accept-license"
+        SPLUNK_PASSWORD: "{{ splunk_password }}"
+        SPLUNK_STANDALONE_URL: "{{ splunk_server_hostname }}"
+    published_ports:
+      - "9997:9997"
+      - "514:514"
+    networks_cli_compatible: yes
+    volumes:
+      - "splunkforwarder_etc:/opt/splunkforwarder/etc"
+      - "splunkforwarder_var:/opt/splunkforwarder/var"
+    restart_policy: unless-stopped
+    state: present
+
+- name: Starting splunk universal forwarder
+  docker_container:
+    name: "splunk-uf1"
+    state: started

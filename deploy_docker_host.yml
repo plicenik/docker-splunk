@@ -1,0 +1,66 @@
+---
+- hosts: localhost
+  gather_facts: no
+
+  vars_prompt:
+    - name: "docker_host"
+      prompt: "Destination server IP address or hostname"
+      private: no
+
+  tasks:
+    - name: Adding destination server to the host inventory
+      add_host:
+        name: "{{ docker_host }}"
+        ansible_ssh_user: "root"
+        ansible_ssh_private_key_file: '~/.ssh/s4u'
+        group: docker_hosts
+
+- hosts: docker_hosts
+  gather_facts: no
+
+  roles:
+    - docker
+
+  pre_tasks:
+    - name: Removing Python2
+      raw: apt remove -y python2.7-minimal
+    - name: Installing Python3
+      raw: test -e /usr/bin/python3 || (apt -y update && apt install -y python3)
+    - name: Setting ansible_python_interpreter to /usr/bin/python3
+      set_fact:
+        ansible_python_interpreter: /usr/bin/python3
+    - name: Installing basic software
+      apt:
+        pkg:
+          - open-vm-tools
+          - python3-pip
+          - python3-passlib
+          - python3-cryptography
+          - ansible
+          - openssl
+          - wget
+          - socat
+          - rsync
+          - telnet
+          - dnsutils
+          - mc
+        state: present
+        update_cache: yes
+    - name: Creating group s4u
+      group:
+        gid: "1000"
+        name: "s4u"
+        state: present
+        system: yes
+    - name: Creating user s4u
+      user:
+        comment: 'System4u'
+        createhome: no
+        name: "s4u"
+        shell: /usr/sbin/nologin
+        state: present
+        system: yes
+        uid: "1000"
+        group: "s4u"
+    - name: Rebooting machine
+      reboot:
