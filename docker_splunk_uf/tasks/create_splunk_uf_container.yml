@@ -11,10 +11,10 @@
         SPLUNK_START_ARGS: "--accept-license"
         SPLUNK_PASSWORD: "{{ splunk_password }}"
         SPLUNK_STANDALONE_URL: "{{ splunk_server_hostname }}"
+        SPLUNK_LICENSE_URI: "Free"
     published_ports:
       - "9997:9997"
-      - "514:514"
-      - "514:514/udp"
+      - "514:1514/udp"
     networks_cli_compatible: yes
     volumes:
       - "splunkforwarder_etc:/opt/splunkforwarder/etc"
